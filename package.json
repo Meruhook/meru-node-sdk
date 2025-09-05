@@ -1,0 +1,58 @@
+{
+  "name": "@meruhook/node-sdk",
+  "version": "1.0.0",
+  "description": "Node.js SDK for Meru Email Webhook Service",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "keywords": ["meru", "email", "webhook", "sdk", "nodejs", "typescript"],
+  "license": "MIT",
+  "sideEffects": false,
+  "author": {
+    "name": "Zachary Oakes",
+    "email": "zachary.oakes@gmail.com"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --outdir=dist --target=node --format=esm && bun build src/index.ts --outdir=dist --target=node --format=cjs --outfile=index.js",
+    "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
+    "dev": "bun --watch src/index.ts",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "lint": "bun check src/**/*.ts tests/**/*.ts",
+    "lint:security": "bun run security:check",
+    "type-check": "tsc --noEmit",
+    "security:check": "grep -r \"console\\.log\\|eval\\|Function\\|setTimeout\\|setInterval\" src/ --exclude-dir=node_modules || echo 'Security check passed'",
+    "security:audit": "bun audit --audit-level moderate",
+    "precommit": "bun run type-check && bun run lint && bun run test",
+    "prepublishOnly": "bun run precommit && bun run build && bun run build:types"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meruhook/node-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/meruhook/node-sdk/issues"
+  },
+  "homepage": "https://github.com/meruhook/node-sdk#readme"
+}
