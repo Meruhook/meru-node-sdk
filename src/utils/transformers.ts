@@ -17,6 +17,7 @@ import type {
   BillingPeriodData,
   BillingBreakdown,
   BillingBreakdownData,
+  UsageBreakdown,
   User,
   UserData,
   ApiToken,
@@ -71,15 +72,21 @@ export function transformUsagePeriod(data: UsagePeriodData): UsagePeriod {
  */
 export function transformUsage(data: UsageData): Usage {
   return {
-    totalEmails: data.total_emails,
-    successfulEmails: data.successful_emails,
-    failedWebhooks: data.failed_webhooks,
-    todayEmails: data.today_emails,
-    projectedMonthly: data.projected_monthly,
-    successRate: data.success_rate,
-    failureRate: data.failure_rate,
-    lastCalculatedAt: data.last_calculated_at,
-    period: transformUsagePeriod(data.period),
+    totalEmails: data.total_emails || 0,
+    successfulEmails: data.successful_emails || 0,
+    failedWebhooks: data.failed_webhooks || 0,
+    todayEmails: data.today_emails || 0,
+    projectedMonthly: data.projected_monthly || 0,
+    successRate: data.success_rate || 0,
+    failureRate: data.failure_rate || 0,
+    lastCalculatedAt: data.last_calculated_at || new Date().toISOString(),
+    period: data.period ? transformUsagePeriod(data.period) : {
+      start: new Date(),
+      end: new Date(),
+      currentDay: 1,
+      daysInMonth: 30,
+      daysRemaining: 29
+    },
   };
 }
 
@@ -138,12 +145,28 @@ export function transformBillingPeriod(data: BillingPeriodData): BillingPeriod {
  */
 export function transformBilling(data: BillingData): Billing {
   return {
-    currentCost: data.current_cost,
-    projectedCost: data.projected_cost,
-    emailProcessingCost: data.email_processing_cost,
-    subscription: transformSubscription(data.subscription),
+    currentCost: data.current_cost || 0,
+    projectedCost: data.projected_cost || 0,
+    emailProcessingCost: data.email_processing_cost || 0,
+    subscription: data.subscription_status 
+      ? transformSubscription(data.subscription_status) 
+      : data.subscription 
+      ? transformSubscription(data.subscription)
+      : {
+          hasBaseSubscription: false,
+          hasAddonSubscription: false,
+          onTrial: false,
+          trialEndsAt: null
+        },
     spendingLimit: transformSpendingLimit(data.spending_limit),
-    period: transformBillingPeriod(data.period),
+    period: data.period_info 
+      ? transformBillingPeriod(data.period_info)
+      : data.period
+      ? transformBillingPeriod(data.period)
+      : {
+          start: new Date(),
+          end: new Date()
+        },
   };
 }
 
@@ -152,18 +175,16 @@ export function transformBilling(data: BillingData): Billing {
  */
 export function transformBillingBreakdown(data: BillingBreakdownData): BillingBreakdown {
   return {
-    emailProcessingCosts: {
-      emailCount: data.email_processing_costs.email_count,
-      costPerEmail: data.email_processing_costs.cost_per_email,
-      totalCost: data.email_processing_costs.total_cost,
-    },
-    subscriptionCosts: {
-      baseCost: data.subscription_costs.base_cost,
-      addonCost: data.subscription_costs.addon_cost,
-      totalCost: data.subscription_costs.total_cost,
-    },
+    baseCost: data.base_cost,
+    overageCost: data.overage_cost,
+    addonCost: data.addon_cost,
     totalCost: data.total_cost,
-    period: transformBillingPeriod(data.period),
+    usageBreakdown: {
+      includedEmails: data.usage_breakdown.included_emails,
+      usedEmails: data.usage_breakdown.used_emails,
+      overageEmails: data.usage_breakdown.overage_emails,
+      remainingIncluded: data.usage_breakdown.remaining_included,
+    },
   };
 }
 
@@ -199,13 +220,18 @@ export function transformApiToken(data: ApiTokenData): ApiToken {
 /**
  * Transform raw account summary data to AccountSummary object
  */
-export function transformAccountSummary(data: AccountSummaryData): AccountSummary {
+export function transformAccountSummary(data: AccountSummaryData, usage: any, billing: any): AccountSummary {
+  // Find the most recent activity from addresses
+  const lastActivity = null; // TODO: Calculate from addresses if needed
+  
   return {
     totalAddresses: data.total_addresses,
     activeAddresses: data.active_addresses,
-    emailsThisMonth: data.emails_this_month,
-    costThisMonth: data.cost_this_month,
+    emailsThisMonth: usage.total_emails || 0,
+    costThisMonth: billing.current_cost || 0,
     isOverSpendingLimit: data.is_over_spending_limit,
+    hasRecentActivity: data.has_recent_activity,
+    lastActivity: lastActivity,
   };
 }
 
@@ -213,10 +239,13 @@ export function transformAccountSummary(data: AccountSummaryData): AccountSummar
  * Transform raw account overview data to AccountOverview object
  */
 export function transformAccountOverview(data: AccountOverviewData): AccountOverview {
+  const usage = transformUsage(data.usage);
+  const billing = transformBilling(data.billing);
+  
   return {
-    addresses: data.addresses.map(transformAddress),
-    usage: transformUsage(data.usage),
-    billing: transformBilling(data.billing),
-    summary: transformAccountSummary(data.summary),
+    addresses: data.addresses.data.map(transformAddress),
+    usage: usage,
+    billing: billing,
+    summary: transformAccountSummary(data.summary, data.usage, data.billing),
   };
 }

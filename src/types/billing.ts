@@ -45,28 +45,21 @@ export interface BillingPeriod {
  * Billing breakdown information
  */
 export interface BillingBreakdown {
-  readonly emailProcessingCosts: EmailProcessingCosts;
-  readonly subscriptionCosts: SubscriptionCosts;
-  readonly totalCost: number;
-  readonly period: BillingPeriod;
-}
-
-/**
- * Email processing cost breakdown
- */
-export interface EmailProcessingCosts {
-  readonly emailCount: number;
-  readonly costPerEmail: number;
-  readonly totalCost: number;
-}
-
-/**
- * Subscription cost breakdown
- */
-export interface SubscriptionCosts {
   readonly baseCost: number;
+  readonly overageCost: number;
   readonly addonCost: number;
   readonly totalCost: number;
+  readonly usageBreakdown: UsageBreakdown;
+}
+
+/**
+ * Usage breakdown information
+ */
+export interface UsageBreakdown {
+  readonly includedEmails: number;
+  readonly usedEmails: number;
+  readonly overageEmails: number;
+  readonly remainingIncluded: number;
 }
 
 /**
@@ -116,16 +109,14 @@ export interface BillingPeriodData {
  * Raw billing breakdown data from API response
  */
 export interface BillingBreakdownData {
-  email_processing_costs: {
-    email_count: number;
-    cost_per_email: number;
-    total_cost: number;
-  };
-  subscription_costs: {
-    base_cost: number;
-    addon_cost: number;
-    total_cost: number;
-  };
+  base_cost: number;
+  overage_cost: number;
+  addon_cost: number;
   total_cost: number;
-  period: BillingPeriodData;
+  usage_breakdown: {
+    included_emails: number;
+    used_emails: number;
+    overage_emails: number;
+    remaining_included: number;
+  };
 }

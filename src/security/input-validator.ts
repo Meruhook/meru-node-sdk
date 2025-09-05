@@ -1,5 +1,6 @@
 import { 
   UUID_REGEX, 
+  ULID_REGEX,
   SECURITY_LIMITS, 
   HEADER_INJECTION_PATTERNS,
   ALLOWED_URL_SCHEMES,
@@ -20,7 +21,7 @@ export interface ValidationOptions {
 
 export class InputValidator {
   /**
-   * Validate a UUID format
+   * Validate a UUID or ULID format (Meru uses ULID)
    */
   static validateUuid(input: string, fieldName: string = 'ID'): ValidationResult {
     const errors: string[] = [];
@@ -39,8 +40,12 @@ export class InputValidator {
       errors.push(`${fieldName} exceeds maximum length of ${SECURITY_LIMITS.MAX_ADDRESS_ID_LENGTH}`);
     }
 
-    if (!UUID_REGEX.test(input)) {
-      errors.push(`${fieldName} must be a valid UUID format`);
+    // Accept both UUID and ULID formats (Meru uses ULID)
+    const isValidUuid = UUID_REGEX.test(input);
+    const isValidUlid = ULID_REGEX.test(input);
+    
+    if (!isValidUuid && !isValidUlid) {
+      errors.push(`${fieldName} must be a valid UUID or ULID format`);
     }
 
     return {

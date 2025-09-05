@@ -21,13 +21,17 @@ export interface AccountSummary {
   readonly emailsThisMonth: number;
   readonly costThisMonth: number;
   readonly isOverSpendingLimit: boolean;
+  readonly hasRecentActivity: boolean;
+  readonly lastActivity: Date | null;
 }
 
 /**
  * Raw account overview data from API response
  */
 export interface AccountOverviewData {
-  addresses: any[];
+  addresses: {
+    data: any[];
+  };
   usage: any;
   billing: any;
   summary: AccountSummaryData;
@@ -37,9 +41,8 @@ export interface AccountOverviewData {
  * Raw account summary data from API response
  */
 export interface AccountSummaryData {
-  total_addresses: number;
   active_addresses: number;
-  emails_this_month: number;
-  cost_this_month: number;
+  total_addresses: number;
   is_over_spending_limit: boolean;
+  has_recent_activity: boolean;
 }

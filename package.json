@@ -54,5 +54,10 @@
   "bugs": {
     "url": "https://github.com/meruhook/node-sdk/issues"
   },
-  "homepage": "https://github.com/meruhook/node-sdk#readme"
+  "homepage": "https://github.com/meruhook/node-sdk#readme",
+  "dependencies": {
+    "@types/express": "^5.0.3",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0"
+  }
 }
